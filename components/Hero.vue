@@ -1,93 +1,65 @@
-<script setup>
-import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
+<script setup lang="ts">
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { ChevronDownIcon } from '@heroicons/vue/24/solid'
 
-const sectionRef = ref(null)
-const textContainerRef = ref(null)
-const mousePosition = reactive({ x: 0, y: 0 })
+const sectionRef = ref<HTMLElement | null>(null)
+const textContainerRef = ref<HTMLElement | null>(null)
 
-const windowWidth = ref(1920)  
+const mousePosition = reactive({ x: 0, y: 0 })
+const stars = ref<any[]>([])
+const backgroundStyle = ref({})
+const textColor = ref('')
+const textShadowStyle = ref({})
+
+const windowWidth = ref(1920)
 const windowHeight = ref(1080)
 
-onMounted(() => {
-  handleResize()
-  window.addEventListener('resize', handleResize)
-  generateStars(500)
-  updateMousePosition()
-})
+let rafId: number | null = null
 
-onUnmounted(() => {
-  if (rafId) cancelAnimationFrame(rafId)
-  window.removeEventListener('resize', handleResize)
-})
-
-function handleResize() {
-  windowWidth.value = window.innerWidth
-  windowHeight.value = window.innerHeight
-  if (sectionRef.value) {
-    mousePosition.x = window.innerWidth / 2
-    mousePosition.y = window.innerHeight / 2
-  }
-}
-
-let rafId = null
-function updateMousePosition() {
-  rafId = requestAnimationFrame(updateMousePosition)
-}
-
-const backgroundStyle = computed(() => {
-  const { x, y } = mousePosition
-  const xPercent = (x / windowWidth.value) * 100
-  const yPercent = (y / windowHeight.value) * 100
-  return {
-    background: `radial-gradient(circle at ${xPercent}% ${yPercent}%, #4b0082, #000000)`
-  }
-})
-
-const textColor = computed(() => {
-  const { x, y } = mousePosition
-  const distance = Math.sqrt((x - windowWidth.value / 2) ** 2 + (y - windowHeight.value / 2) ** 2)
-  const maxDistance = Math.sqrt((windowWidth.value / 2) ** 2 + (windowHeight.value / 2) ** 2)
-  const intensity = 1 - Math.min(distance / maxDistance, 1)
-  return `rgb(${166 + intensity * 89}, ${74 + intensity * 181}, ${201 + intensity * 54})`
-})
-
-const textShadowStyle = computed(() => {
-  const { x, y } = mousePosition
-  const rect = textContainerRef.value?.getBoundingClientRect()
-  if (!rect) return {}
-
-  const textCenterX = rect.left + rect.width / 2
-  const textCenterY = rect.top + rect.height / 2
-
-  const deltaX = x - textCenterX
-  const deltaY = y - textCenterY
-  const distance = Math.sqrt(deltaX ** 2 + deltaY ** 2)
-
-  const maxDistance = Math.min(windowWidth.value, windowHeight.value) / 2
-  const shadowIntensity = Math.min(distance / maxDistance, 1)
-
-  const shadowX = (-deltaX / 15) * shadowIntensity
-  const shadowY = (-deltaY / 15) * shadowIntensity
-  const shadowBlur = 10 + 30 * shadowIntensity
-
-  return {
-    textShadow: `
-      ${shadowX}px ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, 0.75),
-      0 0 10px rgba(166, 74, 201, 0.8),
-      0 0 20px rgba(166, 74, 201, 0.5),
-      0 0 30px rgba(75, 0, 130, 0.4)
-    `
-  }
-})
-
-function handleMouseMove(event) {
+function handleMouseMove(event: MouseEvent) {
   mousePosition.x = event.clientX
   mousePosition.y = event.clientY
 }
 
-// ⭐️ Génération d'étoiles
-const stars = ref([])
+function updateDynamicStyles() {
+  const { x, y } = mousePosition
+
+  const xPercent = (x / windowWidth.value) * 100
+  const yPercent = (y / windowHeight.value) * 100
+  backgroundStyle.value = {
+    background: `radial-gradient(circle at ${xPercent}% ${yPercent}%, #4b0082, #000000)`
+  }
+
+  const distance = Math.sqrt((x - windowWidth.value / 2) ** 2 + (y - windowHeight.value / 2) ** 2)
+  const maxDistance = Math.sqrt((windowWidth.value / 2) ** 2 + (windowHeight.value / 2) ** 2)
+  const intensity = 1 - Math.min(distance / maxDistance, 1)
+  textColor.value = `rgb(${166 + intensity * 89}, ${74 + intensity * 181}, ${201 + intensity * 54})`
+
+  const rect = textContainerRef.value?.getBoundingClientRect()
+  if (rect) {
+    const textCenterX = rect.left + rect.width / 2
+    const textCenterY = rect.top + rect.height / 2
+    const deltaX = x - textCenterX
+    const deltaY = y - textCenterY
+    const dist = Math.sqrt(deltaX ** 2 + deltaY ** 2)
+    const maxDist = Math.min(windowWidth.value, windowHeight.value) / 2
+    const shadowIntensity = Math.min(dist / maxDist, 1)
+    const shadowX = (-deltaX / 15) * shadowIntensity
+    const shadowY = (-deltaY / 15) * shadowIntensity
+    const shadowBlur = 10 + 30 * shadowIntensity
+
+    textShadowStyle.value = {
+      textShadow: `
+        ${shadowX}px ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, 0.75),
+        0 0 10px rgba(166, 74, 201, 0.8),
+        0 0 20px rgba(166, 74, 201, 0.5),
+        0 0 30px rgba(75, 0, 130, 0.4)
+      `
+    }
+  }
+
+  rafId = requestAnimationFrame(updateDynamicStyles)
+}
 
 function generateStars(count = 100) {
   stars.value = Array.from({ length: count }, () => ({
@@ -100,17 +72,30 @@ function generateStars(count = 100) {
   }))
 }
 
-// Scrolls
-function scrollToProjects() {
-  document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })
+function handleResize() {
+  windowWidth.value = window.innerWidth
+  windowHeight.value = window.innerHeight
+  mousePosition.x = window.innerWidth / 2
+  mousePosition.y = window.innerHeight / 2
 }
-function scrollToComp() {
-  document.getElementById('compe')?.scrollIntoView({ behavior: 'smooth' })
-}
-function scrollToAbout() {
-  document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })
-}
+
+onMounted(() => {
+  generateStars(500)
+  handleResize()
+  window.addEventListener('resize', handleResize)
+  rafId = requestAnimationFrame(updateDynamicStyles)
+})
+
+onUnmounted(() => {
+  if (rafId) cancelAnimationFrame(rafId)
+  window.removeEventListener('resize', handleResize)
+})
+
+function scrollToProjects() { document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' }) }
+function scrollToComp() { document.getElementById('compe')?.scrollIntoView({ behavior: 'smooth' }) }
+function scrollToAbout() { document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }) }
 </script>
+
 
 
 <template>
