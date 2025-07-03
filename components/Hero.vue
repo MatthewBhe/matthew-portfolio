@@ -2,16 +2,13 @@
 import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 import { ChevronDownIcon } from '@heroicons/vue/24/solid'
 
-// Refs de base
 const sectionRef = ref(null)
 const textContainerRef = ref(null)
 const mousePosition = reactive({ x: 0, y: 0 })
 
-// ✅ Ajoute une version réactive des dimensions
-const windowWidth = ref(1920)  // Valeur par défaut safe pour SSR
+const windowWidth = ref(1920)  
 const windowHeight = ref(1080)
 
-// ✅ Mets à jour côté client seulement
 onMounted(() => {
   handleResize()
   window.addEventListener('resize', handleResize)
@@ -38,7 +35,6 @@ function updateMousePosition() {
   rafId = requestAnimationFrame(updateMousePosition)
 }
 
-// ✅ Ces `computed` utilisent maintenant `windowWidth` réactif
 const backgroundStyle = computed(() => {
   const { x, y } = mousePosition
   const xPercent = (x / windowWidth.value) * 100

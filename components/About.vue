@@ -29,13 +29,15 @@
 
         <div class="mt-8 mb-10">
           <a
-            href="/docs/BONHOMME_Matthew_CV.pdf"
+            href="./docs/BONHOMME_Matthew_CV.pdf"
             download="CV_Matthew_Bonhomme.pdf"
+            target="_blank"
             class="inline-block px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full font-semibold hover:opacity-90 transition"
           >
             Télécharger mon CV
           </a>
         </div>
+
 
 
         <div class="flex justify-center md:justify-start gap-6 mt-4">

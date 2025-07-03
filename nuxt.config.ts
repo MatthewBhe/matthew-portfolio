@@ -1,6 +1,6 @@
 export default defineNuxtConfig({
   app: {
-    baseURL: '/matthew-portfolio/' 
+    baseURL: '/matthew-portfolio/',
   },
   modules: ['@nuxtjs/tailwindcss'],
   css: [
@@ -8,5 +8,5 @@ export default defineNuxtConfig({
     'primeicons/primeicons.css',                        
   ],
   
-  compatibilityDate: '2024-09-21',
+
 })

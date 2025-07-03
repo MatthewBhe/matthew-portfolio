@@ -5,27 +5,76 @@ import { Navigation } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 
+
 const projects = [
   {
     title: 'Tower of Hero',
     description: "Jeu de plateforme 2D réalisé en Java avec Swing. Le joueur doit améliorer ses héros et gravir le plus d'étages possible en battant les monstres présents à chaque niveau.",
-    image: '/img/tower-of-hero.png',
+    image: 'img/tower-of-hero.png', 
     link: 'https://github.com/MatthewBhe/Java-Final-Project'
   },
   {
     title: 'Analyseur syntaxique',
     description: "Ce projet est un interpréteur d’expressions ensemblistes avec Flex et Bison. Il prend en charge l’union, l’intersection, le complément, la cardinalité, la copie d’ensembles et la gestion des doublons. L’interpréteur analyse, exécute et affiche les résultats des expressions fournies par l’utilisateur.",
-    image: '/img/auto.png',
+    image: 'img/auto.png',
     link: 'https://github.com/MatthewBhe/THL-Final-Project'
   },
   {
     title: 'Ninja Spectral',
-    description: "Ce projet est un jeu mobile développé sous Android Studio et publié sur le Play Store. Le but du projet est de reproduire un niveau de Mario où le joueur doit parcourir toute la carte sans mourir pour terminer le niveau. ",
-    image: '/img/ninjaSpectral.png',
+    description: "Ce projet est un jeu mobile développé sous Android Studio et publié sur le Play Store. Le but du projet est de reproduire un niveau de Mario où le joueur doit parcourir toute la carte sans mourir pour terminer le niveau.",
+    image: 'img/ninjaSpectral.png',
     link: ''
   }
 ]
+
+onMounted(() => {
+  const canvas = document.getElementById("tech-grid")
+  if (!canvas) return
+
+  const ctx = canvas.getContext("2d")
+
+  const resize = () => {
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+  }
+
+  window.addEventListener("resize", resize)
+  resize()
+
+  const lines = []
+  for (let i = 0; i < 50; i++) {
+    lines.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      length: 200 + Math.random() * 200,
+      speed: 0.3 + Math.random() * 0.7
+    })
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.strokeStyle = "rgba(0, 255, 255, 0.2)"
+    ctx.lineWidth = 1
+
+    for (const line of lines) {
+      ctx.beginPath()
+      ctx.moveTo(line.x, line.y)
+      ctx.lineTo(line.x, line.y + line.length)
+      ctx.stroke()
+      line.y += line.speed
+      if (line.y > canvas.height) {
+        line.y = -line.length
+        line.x = Math.random() * canvas.width
+      }
+    }
+
+    requestAnimationFrame(animate)
+  }
+
+  animate()
+})
 </script>
+
 
 <style scoped>
 #tech-grid {
