@@ -3,8 +3,8 @@ import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 
 const sectionRef = ref<HTMLElement | null>(null)
 const textContainerRef = ref<HTMLElement | null>(null)
-
 const mousePosition = reactive({ x: 0, y: 0 })
+
 const windowWidth = ref(1920)
 const windowHeight = ref(1080)
 
@@ -16,11 +16,11 @@ const textShadowStyle = ref({})
 
 let rafId: number | null = null
 
-function updateDynamicStyles() {
+function updateEffects() {
   const { x, y } = mousePosition
+
   const xPercent = (x / windowWidth.value) * 100
   const yPercent = (y / windowHeight.value) * 100
-
   backgroundStyle.value = {
     background: `radial-gradient(circle at ${xPercent}% ${yPercent}%, #4b0082, #000000)`
   }
@@ -32,16 +32,14 @@ function updateDynamicStyles() {
 
   const rect = textContainerRef.value?.getBoundingClientRect()
   if (rect) {
-    const textCenterX = rect.left + rect.width / 2
-    const textCenterY = rect.top + rect.height / 2
-    const deltaX = x - textCenterX
-    const deltaY = y - textCenterY
+    const deltaX = x - (rect.left + rect.width / 2)
+    const deltaY = y - (rect.top + rect.height / 2)
     const dist = Math.sqrt(deltaX ** 2 + deltaY ** 2)
     const maxDist = Math.min(windowWidth.value, windowHeight.value) / 2
-    const shadowIntensity = Math.min(dist / maxDist, 1)
-    const shadowX = (-deltaX / 15) * shadowIntensity
-    const shadowY = (-deltaY / 15) * shadowIntensity
-    const shadowBlur = 10 + 30 * shadowIntensity
+    const intensity = Math.min(dist / maxDist, 1)
+    const shadowX = (-deltaX / 15) * intensity
+    const shadowY = (-deltaY / 15) * intensity
+    const shadowBlur = 10 + 30 * intensity
 
     textShadowStyle.value = {
       textShadow: `
@@ -53,7 +51,7 @@ function updateDynamicStyles() {
     }
   }
 
-  rafId = requestAnimationFrame(updateDynamicStyles)
+  rafId = requestAnimationFrame(updateEffects)
 }
 
 function handleMouseMove(event: MouseEvent) {
@@ -61,14 +59,7 @@ function handleMouseMove(event: MouseEvent) {
   mousePosition.y = event.clientY
 }
 
-function handleResize() {
-  windowWidth.value = window.innerWidth
-  windowHeight.value = window.innerHeight
-  mousePosition.x = window.innerWidth / 2
-  mousePosition.y = window.innerHeight / 2
-}
-
-function generateStars(count = 300) {
+function generateStars(count = 200) {
   stars.value = Array.from({ length: count }, () => ({
     top: `${Math.random() * 100}%`,
     left: `${Math.random() * 100}%`,
@@ -79,19 +70,27 @@ function generateStars(count = 300) {
   }))
 }
 
+function handleResize() {
+  windowWidth.value = window.innerWidth
+  windowHeight.value = window.innerHeight
+  mousePosition.x = window.innerWidth / 2
+  mousePosition.y = window.innerHeight / 2
+}
+
 onMounted(() => {
-  handleResize()
-  window.addEventListener('resize', handleResize)
-  generateStars()
-  rafId = requestAnimationFrame(updateDynamicStyles)
+  if (process.client) {
+    handleResize()
+    generateStars()
+    window.addEventListener('resize', handleResize)
+    rafId = requestAnimationFrame(updateEffects)
+  }
 })
 
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize)
   if (rafId) cancelAnimationFrame(rafId)
+  window.removeEventListener('resize', handleResize)
 })
 
-// Scroll
 function scrollToProjects() {
   document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })
 }
@@ -102,6 +101,7 @@ function scrollToAbout() {
   document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })
 }
 </script>
+
 
 <template>
   <section
@@ -170,6 +170,7 @@ function scrollToAbout() {
   position: absolute;
   width: 100%;
   height: 100%;
+  pointer-events: none;
   overflow: hidden;
 }
 
@@ -185,6 +186,7 @@ function scrollToAbout() {
   50% { opacity: 1; }
   100% { opacity: 0.5; }
 }
+
 
 button {
   border-radius: 0;
