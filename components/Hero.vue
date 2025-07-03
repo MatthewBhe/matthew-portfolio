@@ -2,16 +2,47 @@
 import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 import { ChevronDownIcon } from '@heroicons/vue/24/solid'
 
-
-
+// Refs de base
 const sectionRef = ref(null)
 const textContainerRef = ref(null)
 const mousePosition = reactive({ x: 0, y: 0 })
 
+// ✅ Ajoute une version réactive des dimensions
+const windowWidth = ref(1920)  // Valeur par défaut safe pour SSR
+const windowHeight = ref(1080)
+
+// ✅ Mets à jour côté client seulement
+onMounted(() => {
+  handleResize()
+  window.addEventListener('resize', handleResize)
+  generateStars(500)
+  updateMousePosition()
+})
+
+onUnmounted(() => {
+  if (rafId) cancelAnimationFrame(rafId)
+  window.removeEventListener('resize', handleResize)
+})
+
+function handleResize() {
+  windowWidth.value = window.innerWidth
+  windowHeight.value = window.innerHeight
+  if (sectionRef.value) {
+    mousePosition.x = window.innerWidth / 2
+    mousePosition.y = window.innerHeight / 2
+  }
+}
+
+let rafId = null
+function updateMousePosition() {
+  rafId = requestAnimationFrame(updateMousePosition)
+}
+
+// ✅ Ces `computed` utilisent maintenant `windowWidth` réactif
 const backgroundStyle = computed(() => {
   const { x, y } = mousePosition
-  const xPercent = (x / window.innerWidth) * 100
-  const yPercent = (y / window.innerHeight) * 100
+  const xPercent = (x / windowWidth.value) * 100
+  const yPercent = (y / windowHeight.value) * 100
   return {
     background: `radial-gradient(circle at ${xPercent}% ${yPercent}%, #4b0082, #000000)`
   }
@@ -19,8 +50,8 @@ const backgroundStyle = computed(() => {
 
 const textColor = computed(() => {
   const { x, y } = mousePosition
-  const distance = Math.sqrt((x - window.innerWidth / 2) ** 2 + (y - window.innerHeight / 2) ** 2)
-  const maxDistance = Math.sqrt((window.innerWidth / 2) ** 2 + (window.innerHeight / 2) ** 2)
+  const distance = Math.sqrt((x - windowWidth.value / 2) ** 2 + (y - windowHeight.value / 2) ** 2)
+  const maxDistance = Math.sqrt((windowWidth.value / 2) ** 2 + (windowHeight.value / 2) ** 2)
   const intensity = 1 - Math.min(distance / maxDistance, 1)
   return `rgb(${166 + intensity * 89}, ${74 + intensity * 181}, ${201 + intensity * 54})`
 })
@@ -37,7 +68,7 @@ const textShadowStyle = computed(() => {
   const deltaY = y - textCenterY
   const distance = Math.sqrt(deltaX ** 2 + deltaY ** 2)
 
-  const maxDistance = Math.min(window.innerWidth, window.innerHeight) / 2
+  const maxDistance = Math.min(windowWidth.value, windowHeight.value) / 2
   const shadowIntensity = Math.min(distance / maxDistance, 1)
 
   const shadowX = (-deltaX / 15) * shadowIntensity
@@ -59,13 +90,8 @@ function handleMouseMove(event) {
   mousePosition.y = event.clientY
 }
 
-let rafId = null
-
-function updateMousePosition() {
-  rafId = requestAnimationFrame(updateMousePosition)
-}
-
-const stars = ref([]);
+// ⭐️ Génération d'étoiles
+const stars = ref([])
 
 function generateStars(count = 100) {
   stars.value = Array.from({ length: count }, () => ({
@@ -75,49 +101,21 @@ function generateStars(count = 100) {
     opacity: Math.random() * 0.5 + 0.3,
     animationDelay: `${Math.random() * 5}s`,
     animationDuration: `${2 + Math.random() * 3}s`
-  }));
+  }))
 }
 
+// Scrolls
 function scrollToProjects() {
-  const el = document.getElementById('projects')
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth' })
-  }
+  document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })
 }
 function scrollToComp() {
-  const el = document.getElementById('compe')
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth' })
-  }
+  document.getElementById('compe')?.scrollIntoView({ behavior: 'smooth' })
 }
 function scrollToAbout() {
-  const el = document.getElementById('about')
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth' })
-  }
+  document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })
 }
-
-onMounted(() => {
-  updateMousePosition();
-  window.addEventListener('resize', handleResize);
-  handleResize();
-  generateStars(500); 
-});
-
-onUnmounted(() => {
-  if (rafId) cancelAnimationFrame(rafId)
-  window.removeEventListener('resize', handleResize)
-})
-
-function handleResize() {
-  if (sectionRef.value) {
-    mousePosition.x = window.innerWidth / 2
-    mousePosition.y = window.innerHeight / 2
-  }
-}
-
-
 </script>
+
 
 <template>
   <section 
