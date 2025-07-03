@@ -1,32 +1,26 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
-import { ChevronDownIcon } from '@heroicons/vue/24/solid'
+import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
 
 const sectionRef = ref<HTMLElement | null>(null)
 const textContainerRef = ref<HTMLElement | null>(null)
 
 const mousePosition = reactive({ x: 0, y: 0 })
+const windowWidth = ref(1920)
+const windowHeight = ref(1080)
+
 const stars = ref<any[]>([])
 
 const backgroundStyle = ref({})
 const textColor = ref('')
 const textShadowStyle = ref({})
 
-const windowWidth = ref(1920)
-const windowHeight = ref(1080)
-
 let rafId: number | null = null
-
-function handleMouseMove(event: MouseEvent) {
-  mousePosition.x = event.clientX
-  mousePosition.y = event.clientY
-}
 
 function updateDynamicStyles() {
   const { x, y } = mousePosition
-
   const xPercent = (x / windowWidth.value) * 100
   const yPercent = (y / windowHeight.value) * 100
+
   backgroundStyle.value = {
     background: `radial-gradient(circle at ${xPercent}% ${yPercent}%, #4b0082, #000000)`
   }
@@ -62,7 +56,19 @@ function updateDynamicStyles() {
   rafId = requestAnimationFrame(updateDynamicStyles)
 }
 
-function generateStars(count = 100) {
+function handleMouseMove(event: MouseEvent) {
+  mousePosition.x = event.clientX
+  mousePosition.y = event.clientY
+}
+
+function handleResize() {
+  windowWidth.value = window.innerWidth
+  windowHeight.value = window.innerHeight
+  mousePosition.x = window.innerWidth / 2
+  mousePosition.y = window.innerHeight / 2
+}
+
+function generateStars(count = 300) {
   stars.value = Array.from({ length: count }, () => ({
     top: `${Math.random() * 100}%`,
     left: `${Math.random() * 100}%`,
@@ -73,40 +79,38 @@ function generateStars(count = 100) {
   }))
 }
 
-function handleResize() {
-  if (typeof window !== 'undefined') {
-    windowWidth.value = window.innerWidth
-    windowHeight.value = window.innerHeight
-    mousePosition.x = window.innerWidth / 2
-    mousePosition.y = window.innerHeight / 2
-  }
-}
-
 onMounted(() => {
-  generateStars(500)
   handleResize()
   window.addEventListener('resize', handleResize)
+  generateStars()
   rafId = requestAnimationFrame(updateDynamicStyles)
 })
 
 onUnmounted(() => {
-  if (rafId) cancelAnimationFrame(rafId)
   window.removeEventListener('resize', handleResize)
+  if (rafId) cancelAnimationFrame(rafId)
 })
 
-function scrollToProjects() { document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' }) }
-function scrollToComp() { document.getElementById('compe')?.scrollIntoView({ behavior: 'smooth' }) }
-function scrollToAbout() { document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }) }
+// Scroll
+function scrollToProjects() {
+  document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })
+}
+function scrollToComp() {
+  document.getElementById('compe')?.scrollIntoView({ behavior: 'smooth' })
+}
+function scrollToAbout() {
+  document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })
+}
 </script>
 
-
 <template>
-  <section 
-    class="h-screen flex flex-col justify-center items-center relative bg-black text-white overflow-hidden" 
-    @mousemove="handleMouseMove"
+  <section
     ref="sectionRef"
+    @mousemove="handleMouseMove"
+    class="h-screen flex flex-col justify-center items-center relative bg-black text-white overflow-hidden"
   >
-    <div class="stars absolute inset-0 pointer-events-none z-10">
+    <!-- Les étoiles dessous -->
+    <div class="stars absolute inset-0 pointer-events-none z-0">
       <div
         v-for="(star, index) in stars"
         :key="index"
@@ -123,12 +127,12 @@ function scrollToAbout() { document.getElementById('about')?.scrollIntoView({ be
       ></div>
     </div>
 
-    <div class="absolute inset-0 transition-all duration-300 ease-out z-1" :style="backgroundStyle"></div>
-
+    <!-- Gradient AU-DESSUS du fond étoilé -->
+    <div class="absolute inset-0 transition-all duration-300 ease-out z-10" :style="backgroundStyle"></div>
 
     <div
       ref="textContainerRef"
-      class="absolute left-1/2 transform -translate-x-1/2 text-center z-10"
+      class="absolute left-1/2 transform -translate-x-1/2 text-center z-20"
       style="top: 33%;"
     >
       <h2 class="text-5xl font-semibold mb-2 tracking-wider" :style="[textShadowStyle, { color: textColor }]">MATTHEW</h2>
@@ -140,33 +144,23 @@ function scrollToAbout() { document.getElementById('about')?.scrollIntoView({ be
         Étudiant en développement web, passionné par les interfaces créatives, l’expérience utilisateur et les défis techniques.
         Curieux de nature, j’aime explorer de nouvelles technologies et repousser mes limites.
       </p>
+
       <div class="mt-8 inline-flex shadow-md rounded-full overflow-hidden">
-
-      <div class="mt-8 inline-flex backdrop-blur-md bg-white/10 border border-white/20 shadow-lg overflow-hidden rounded-full">
-        <button
-          @click="scrollToProjects"
-          class="relative px-6 py-3 font-semibold text-white transition duration-300 transform hover:scale-110 hover:bg-fuchsia-500/40 border-r border-white/10 rounded-l-full"
-        >
-          Mes projets
-        </button>
-
-        <button
-          @click="scrollToComp"
-          class="relative px-6 py-3 font-semibold text-white transition duration-300 transform hover:scale-110 hover:bg-indigo-500/40 border-r border-white/10"
-        >
-          Compétences
-        </button>
-
-        <button
-          @click="scrollToAbout"
-          class="relative px-6 py-3 font-semibold text-white transition duration-300 transform hover:scale-110 hover:bg-purple-500/40 rounded-r-full"
-        >
-          À propos
-        </button>
-</div>
-
-  </div>
-
+        <div class="inline-flex backdrop-blur-md bg-white/10 border border-white/20 shadow-lg overflow-hidden rounded-full">
+          <button @click="scrollToProjects"
+            class="relative px-6 py-3 font-semibold text-white transition duration-300 transform hover:scale-110 hover:bg-fuchsia-500/40 border-r border-white/10 rounded-l-full">
+            Mes projets
+          </button>
+          <button @click="scrollToComp"
+            class="relative px-6 py-3 font-semibold text-white transition duration-300 transform hover:scale-110 hover:bg-indigo-500/40 border-r border-white/10">
+            Compétences
+          </button>
+          <button @click="scrollToAbout"
+            class="relative px-6 py-3 font-semibold text-white transition duration-300 transform hover:scale-110 hover:bg-purple-500/40 rounded-r-full">
+            À propos
+          </button>
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -176,61 +170,7 @@ function scrollToAbout() { document.getElementById('about')?.scrollIntoView({ be
   position: absolute;
   width: 100%;
   height: 100%;
-  background: transparent;
-  animation: twinkle 2s infinite ease-in-out alternate;
-}
-
-.stars::after, .stars::before {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  width: 2px;
-  height: 2px;
-  background: white;
-  opacity: 0.8;
-  animation: twinkle 5s infinite ease-in-out;
-}
-.stars {
-  position: absolute;
-  width: 100%;
-  height: 100%;
   overflow: hidden;
-}
-
-.star {
-  position: absolute;
-  background: white;
-  border-radius: 50%;
-  animation-name: twinkle;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-}
-
-@keyframes slide-light {
-  0% {
-    transform: translateX(-150%);
-    opacity: 0;
-  }
-  50% {
-    transform: translateX(0%);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(150%);
-    opacity: 0;
-  }
-}
-
-.before\:animate-slide-light::before {
-  animation: slide-light 2s infinite ease-in-out;
-}
-
-.stars {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  pointer-events: none;
 }
 
 .star {
@@ -241,20 +181,12 @@ function scrollToAbout() { document.getElementById('about')?.scrollIntoView({ be
 }
 
 @keyframes twinkle {
-  0% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.5;
-  }
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
 }
 
 button {
   border-radius: 0;
 }
-
-
 </style>
