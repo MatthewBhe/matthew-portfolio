@@ -7,6 +7,7 @@ const textContainerRef = ref<HTMLElement | null>(null)
 
 const mousePosition = reactive({ x: 0, y: 0 })
 const stars = ref<any[]>([])
+
 const backgroundStyle = ref({})
 const textColor = ref('')
 const textShadowStyle = ref({})
@@ -19,10 +20,6 @@ let rafId: number | null = null
 function handleMouseMove(event: MouseEvent) {
   mousePosition.x = event.clientX
   mousePosition.y = event.clientY
-
-  if (!rafId) {
-    rafId = requestAnimationFrame(updateDynamicStyles)
-  }
 }
 
 function updateDynamicStyles() {
@@ -77,16 +74,19 @@ function generateStars(count = 100) {
 }
 
 function handleResize() {
-  windowWidth.value = window.innerWidth
-  windowHeight.value = window.innerHeight
-  mousePosition.x = window.innerWidth / 2
-  mousePosition.y = window.innerHeight / 2
+  if (typeof window !== 'undefined') {
+    windowWidth.value = window.innerWidth
+    windowHeight.value = window.innerHeight
+    mousePosition.x = window.innerWidth / 2
+    mousePosition.y = window.innerHeight / 2
+  }
 }
 
 onMounted(() => {
   generateStars(500)
   handleResize()
   window.addEventListener('resize', handleResize)
+  rafId = requestAnimationFrame(updateDynamicStyles)
 })
 
 onUnmounted(() => {
@@ -98,6 +98,7 @@ function scrollToProjects() { document.getElementById('projects')?.scrollIntoVie
 function scrollToComp() { document.getElementById('compe')?.scrollIntoView({ behavior: 'smooth' }) }
 function scrollToAbout() { document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }) }
 </script>
+
 
 <template>
   <section 
