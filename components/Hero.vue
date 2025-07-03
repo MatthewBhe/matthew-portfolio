@@ -19,6 +19,10 @@ let rafId: number | null = null
 function handleMouseMove(event: MouseEvent) {
   mousePosition.x = event.clientX
   mousePosition.y = event.clientY
+
+  if (!rafId) {
+    rafId = requestAnimationFrame(updateDynamicStyles)
+  }
 }
 
 function updateDynamicStyles() {
@@ -83,7 +87,6 @@ onMounted(() => {
   generateStars(500)
   handleResize()
   window.addEventListener('resize', handleResize)
-  rafId = requestAnimationFrame(updateDynamicStyles)
 })
 
 onUnmounted(() => {
@@ -95,8 +98,6 @@ function scrollToProjects() { document.getElementById('projects')?.scrollIntoVie
 function scrollToComp() { document.getElementById('compe')?.scrollIntoView({ behavior: 'smooth' }) }
 function scrollToAbout() { document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }) }
 </script>
-
-
 
 <template>
   <section 
