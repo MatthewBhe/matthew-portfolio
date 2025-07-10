@@ -79,12 +79,10 @@ function handleResize() {
 }
 
 onMounted(() => {
-  if (process.client) {
-    generateStars()
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    rafId = requestAnimationFrame(updateEffects)
-  }
+  generateStars()
+  handleResize()
+  window.addEventListener('resize', handleResize)
+  rafId = requestAnimationFrame(updateEffects)
 })
 
 onUnmounted(() => {
@@ -107,7 +105,7 @@ function scrollToAbout() {
   <section
     ref="sectionRef"
     @mousemove="handleMouseMove"
-    class="h-screen flex flex-col justify-center items-center relative bg-black text-white overflow-hidden"
+    class="h-screen flex flex-col justify-center items-center relative text-white overflow-hidden"
   >
     <!-- BACKGROUND GRADIENT : z-0 -->
     <div class="absolute inset-0 transition-all duration-300 ease-out z-0" :style="backgroundStyle"></div>
