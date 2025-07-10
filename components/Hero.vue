@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 
 const sectionRef = ref<HTMLElement | null>(null)
 const textContainerRef = ref<HTMLElement | null>(null)
-const mousePosition = reactive({ x: 0, y: 0 })
 
+const mousePosition = reactive({ x: 0, y: 0 })
 const windowWidth = ref(1920)
 const windowHeight = ref(1080)
-
-const stars = ref<any[]>([])
 
 const backgroundStyle = ref({})
 const textColor = ref('')
 const textShadowStyle = ref({})
+const stars = ref<any[]>([])
 
 let rafId: number | null = null
 
+// Met à jour gradient + texte + glow
 function updateEffects() {
   const { x, y } = mousePosition
-
   const xPercent = (x / windowWidth.value) * 100
   const yPercent = (y / windowHeight.value) * 100
+
   backgroundStyle.value = {
     background: `radial-gradient(circle at ${xPercent}% ${yPercent}%, #4b0082, #000000)`
   }
@@ -32,14 +32,15 @@ function updateEffects() {
 
   const rect = textContainerRef.value?.getBoundingClientRect()
   if (rect) {
-    const deltaX = x - (rect.left + rect.width / 2)
-    const deltaY = y - (rect.top + rect.height / 2)
-    const dist = Math.sqrt(deltaX ** 2 + deltaY ** 2)
-    const maxDist = Math.min(windowWidth.value, windowHeight.value) / 2
-    const intensity = Math.min(dist / maxDist, 1)
-    const shadowX = (-deltaX / 15) * intensity
-    const shadowY = (-deltaY / 15) * intensity
-    const shadowBlur = 10 + 30 * intensity
+    const dx = x - (rect.left + rect.width / 2)
+    const dy = y - (rect.top + rect.height / 2)
+    const dist = Math.sqrt(dx ** 2 + dy ** 2)
+    const maxD = Math.min(windowWidth.value, windowHeight.value) / 2
+    const s = Math.min(dist / maxD, 1)
+
+    const shadowX = (-dx / 15) * s
+    const shadowY = (-dy / 15) * s
+    const shadowBlur = 10 + 30 * s
 
     textShadowStyle.value = {
       textShadow: `
@@ -79,8 +80,8 @@ function handleResize() {
 
 onMounted(() => {
   if (process.client) {
-    handleResize()
     generateStars()
+    handleResize()
     window.addEventListener('resize', handleResize)
     rafId = requestAnimationFrame(updateEffects)
   }
@@ -102,15 +103,17 @@ function scrollToAbout() {
 }
 </script>
 
-
 <template>
   <section
     ref="sectionRef"
     @mousemove="handleMouseMove"
     class="h-screen flex flex-col justify-center items-center relative bg-black text-white overflow-hidden"
   >
-    <!-- Les étoiles dessous -->
-    <div class="stars absolute inset-0 pointer-events-none z-0">
+    <!-- BACKGROUND GRADIENT : z-0 -->
+    <div class="absolute inset-0 transition-all duration-300 ease-out z-0" :style="backgroundStyle"></div>
+
+    <!-- STARS : z-10 -->
+    <div class="stars absolute inset-0 pointer-events-none z-10">
       <div
         v-for="(star, index) in stars"
         :key="index"
@@ -127,36 +130,43 @@ function scrollToAbout() {
       ></div>
     </div>
 
-    <!-- Gradient AU-DESSUS du fond étoilé -->
-    <div class="absolute inset-0 transition-all duration-300 ease-out z-10" :style="backgroundStyle"></div>
-
+    <!-- TEXT : z-20 -->
     <div
       ref="textContainerRef"
       class="absolute left-1/2 transform -translate-x-1/2 text-center z-20"
       style="top: 33%;"
     >
-      <h2 class="text-5xl font-semibold mb-2 tracking-wider" :style="[textShadowStyle, { color: textColor }]">MATTHEW</h2>
-      <h1 class="text-9xl font-bold tracking-tight" :style="[textShadowStyle, { color: textColor }]">BONHOMME</h1>
+      <h2 class="text-5xl font-semibold mb-2 tracking-wider" :style="[textShadowStyle, { color: textColor }]">
+        MATTHEW
+      </h2>
+      <h1 class="text-9xl font-bold tracking-tight" :style="[textShadowStyle, { color: textColor }]">
+        BONHOMME
+      </h1>
       <p
         class="text-base md:text-lg font-medium tracking-wide mt-4 leading-relaxed max-w-xl mx-auto px-4"
         :style="{ color: textColor }"
       >
-        Étudiant en développement web, passionné par les interfaces créatives, l’expérience utilisateur et les défis techniques.
-        Curieux de nature, j’aime explorer de nouvelles technologies et repousser mes limites.
+        Étudiant en développement web, passionné par les interfaces créatives, l’expérience utilisateur et les défis techniques. Curieux de nature, j’aime explorer de nouvelles technologies et repousser mes limites.
       </p>
 
       <div class="mt-8 inline-flex shadow-md rounded-full overflow-hidden">
         <div class="inline-flex backdrop-blur-md bg-white/10 border border-white/20 shadow-lg overflow-hidden rounded-full">
-          <button @click="scrollToProjects"
-            class="relative px-6 py-3 font-semibold text-white transition duration-300 transform hover:scale-110 hover:bg-fuchsia-500/40 border-r border-white/10 rounded-l-full">
+          <button
+            @click="scrollToProjects"
+            class="relative px-6 py-3 font-semibold text-white transition duration-300 transform hover:scale-110 hover:bg-fuchsia-500/40 border-r border-white/10 rounded-l-full"
+          >
             Mes projets
           </button>
-          <button @click="scrollToComp"
-            class="relative px-6 py-3 font-semibold text-white transition duration-300 transform hover:scale-110 hover:bg-indigo-500/40 border-r border-white/10">
+          <button
+            @click="scrollToComp"
+            class="relative px-6 py-3 font-semibold text-white transition duration-300 transform hover:scale-110 hover:bg-indigo-500/40 border-r border-white/10"
+          >
             Compétences
           </button>
-          <button @click="scrollToAbout"
-            class="relative px-6 py-3 font-semibold text-white transition duration-300 transform hover:scale-110 hover:bg-purple-500/40 rounded-r-full">
+          <button
+            @click="scrollToAbout"
+            class="relative px-6 py-3 font-semibold text-white transition duration-300 transform hover:scale-110 hover:bg-purple-500/40 rounded-r-full"
+          >
             À propos
           </button>
         </div>
@@ -165,13 +175,14 @@ function scrollToAbout() {
   </section>
 </template>
 
-<style scoped>
+
+<style>
 .stars {
   position: absolute;
   width: 100%;
   height: 100%;
-  pointer-events: none;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .star {
@@ -182,11 +193,16 @@ function scrollToAbout() {
 }
 
 @keyframes twinkle {
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
 }
-
 
 button {
   border-radius: 0;
