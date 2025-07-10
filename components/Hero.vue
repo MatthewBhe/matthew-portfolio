@@ -1,37 +1,34 @@
 <script setup lang="ts">
-const scrollToProjects = () => {
+import { ref } from 'vue'
+
+// Refs pour le texte
+const textContainerRef = ref<HTMLElement | null>(null)
+
+function scrollToProjects() {
   document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })
 }
-
-const scrollToComp = () => {
+function scrollToComp() {
   document.getElementById('compe')?.scrollIntoView({ behavior: 'smooth' })
 }
-
-const scrollToAbout = () => {
+function scrollToAbout() {
   document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })
 }
 </script>
 
 <template>
   <section
-    class="h-screen flex flex-col justify-center items-center relative text-white overflow-hidden"
-    style="background: radial-gradient(circle at center, #4b0082, #000000);"
+    ref="sectionRef"
+    class="h-screen flex flex-col justify-center items-center relative overflow-hidden text-white bg-gradient-to-b from-indigo-900 to-black"
   >
     <div
+      ref="textContainerRef"
       class="absolute left-1/2 transform -translate-x-1/2 text-center z-10"
       style="top: 33%;"
     >
-      <h2 class="text-5xl font-semibold mb-2 tracking-wider">
-        MATTHEW
-      </h2>
-      <h1 class="text-9xl font-bold tracking-tight">
-        BONHOMME
-      </h1>
-      <p
-        class="text-base md:text-lg font-medium tracking-wide mt-4 leading-relaxed max-w-xl mx-auto px-4"
-      >
-        Étudiant en développement web, passionné par les interfaces créatives,
-        l’expérience utilisateur et les défis techniques.
+      <h2 class="text-5xl font-semibold mb-2 tracking-wider">MATTHEW</h2>
+      <h1 class="text-9xl font-bold tracking-tight">BONHOMME</h1>
+      <p class="text-base md:text-lg font-medium tracking-wide mt-4 leading-relaxed max-w-xl mx-auto px-4">
+        Étudiant en développement web, passionné par les interfaces créatives, l’expérience utilisateur et les défis techniques.
         Curieux de nature, j’aime explorer de nouvelles technologies et repousser mes limites.
       </p>
 
