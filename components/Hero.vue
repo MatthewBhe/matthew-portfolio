@@ -1,9 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
-// Refs pour le texte
-const textContainerRef = ref<HTMLElement | null>(null)
-
 function scrollToProjects() {
   document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })
 }
@@ -17,14 +12,13 @@ function scrollToAbout() {
 
 <template>
   <section
-    ref="sectionRef"
-    class="h-screen flex flex-col justify-center items-center relative overflow-hidden text-white bg-gradient-to-b from-indigo-900 to-black"
+    class="relative h-screen flex flex-col justify-center items-center overflow-hidden text-white bg-black"
   >
-    <div
-      ref="textContainerRef"
-      class="absolute left-1/2 transform -translate-x-1/2 text-center z-10"
-      style="top: 33%;"
-    >
+    <!-- BACKGROUND: dégradé galaxy + pseudo étoiles -->
+    <div class="absolute inset-0 galaxy-bg"></div>
+
+    <!-- TEXT ZONE -->
+    <div class="relative text-center z-10">
       <h2 class="text-5xl font-semibold mb-2 tracking-wider">MATTHEW</h2>
       <h1 class="text-9xl font-bold tracking-tight">BONHOMME</h1>
       <p class="text-base md:text-lg font-medium tracking-wide mt-4 leading-relaxed max-w-xl mx-auto px-4">
@@ -59,6 +53,27 @@ function scrollToAbout() {
 </template>
 
 <style scoped>
+/* FOND GALAXY : Dégradé + fausses étoiles */
+.galaxy-bg {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, #1e1b4b 0%, #000000 80%);
+  background-size: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+
+  /* Faux étoiles via répétition du gradient + bruit */
+  background-image:
+    radial-gradient(2px 2px at 20% 40%, #ffffff 50%, transparent 100%),
+    radial-gradient(2px 2px at 70% 20%, #ffffff 50%, transparent 100%),
+    radial-gradient(1px 1px at 90% 70%, #ffffff 50%, transparent 100%),
+    radial-gradient(1px 1px at 30% 80%, #ffffff 50%, transparent 100%);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
 button {
   border-radius: 0;
 }
