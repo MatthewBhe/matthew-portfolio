@@ -3,5 +3,6 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
-  base: '/matthew-portfolio/'
+  base: '/matthew-portfolio/',
+  build: { sourcemap: true } 
 })
